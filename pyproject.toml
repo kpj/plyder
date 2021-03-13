@@ -9,12 +9,22 @@ repository = "https://github.com/kpj/plyder"
 
 [tool.poetry.dependencies]
 python = "^3.8.0"
+fastapi = "^0.63.0"
+"mega.py" = "^1.0.8"
+Jinja2 = "^2.11.3"
+aiofiles = "^0.6.0"
+uvicorn = "^0.13.4"
+loguru = "^0.5.3"
+sh = "^1.14.1"
 
 [tool.poetry.dev-dependencies]
 bump2version = "^1.0.1"
 black = "^20.8b1"
 pytest = "^6.2.1"
 pytest-markdown = "^1.0.2"
+
+[tool.poetry.scripts]
+plyder = "plyder:main"
 
 [tool.black]
 skip_string_normalization = true

@@ -1,0 +1,37 @@
+<html>
+<head>
+    <title>plyder</title>
+
+    <link href="{{ url_for('static', path='/styles.css') }}" rel="stylesheet">
+
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+</head>
+<body>
+    <h1>plyder</h1>
+
+    <div id="app">
+        <label for="package_name">Package Name:</label>
+        <input type="text" id="package_name" name="package_name">
+        <br>
+        <label for="url_field">URL field:</label>
+        <textarea id="url_field" name="url_field"></textarea>
+
+        <button onclick="submitJob()">Submit</button>
+    </div>
+
+    <script>
+        function submitJob() {
+            return axios.post("/submit_job", {
+                package_name: document.getElementById("package_name").value,
+                url_field: document.getElementById("url_field").value
+            }, {
+                headers: {
+                    'Content-type': 'application/json',
+                }
+            }).then((response) => {
+                console.log("content: " + this.content);
+            })
+        }
+    </script>
+</body>
+</html>
