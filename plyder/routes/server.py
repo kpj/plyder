@@ -1,14 +1,19 @@
+import importlib.resources as pkg_resources
+
 from fastapi import APIRouter, BackgroundTasks, Request
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 
 from pydantic import BaseModel, validator
 
+from .. import templates
 from ..downloader import download_url
 
 
 router = APIRouter(tags=['server'])
-templates = Jinja2Templates(directory='plyder/templates')
+
+with pkg_resources.path(templates, 'index.html') as template_file:
+    templates = Jinja2Templates(directory=template_file.parent)
 
 
 class JobSubmission(BaseModel):
