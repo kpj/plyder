@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "plyder"
-version = "0.1.0"
+version = "0.1.1"
 description = "Download manager with web-interface."
 license = "MIT"
 authors = ["kpj <kim.philipp.jablonski@gmail.com>"]
