@@ -21,8 +21,9 @@ def download_mega(url: str, output_dir: str):
         '--path',
         output_dir,
         url,
-        _fg=True,
-        # _err_to_out=True, _tee=True
+        _out=str(output_dir / 'download.log'),
+        _err_to_out=True,
+        _out_bufsize=0,
     )
 
 
@@ -31,7 +32,9 @@ def download_wget(url: str, output_dir: str):
         '--directory-prefix',
         output_dir,
         url,
-        _fg=True,
+        _out=str(output_dir / 'download.log'),
+        _err_to_out=True,
+        _out_bufsize=0,
     )
 
 
