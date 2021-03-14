@@ -25,6 +25,15 @@ def download_mega(url: str, output_dir: str):
     )
 
 
+def download_wget(url: str, output_dir: str):
+    sh.wget(
+        '--directory-prefix',
+        output_dir,
+        url,
+        _fg=True,
+    )
+
+
 PROVIDER_DICT = {'mega.nz': download_mega}
 
 
@@ -36,8 +45,8 @@ def download_url(job: 'JobSubmission'):
 
         provider = PROVIDER_DICT.get(o.netloc)
         if provider is None:
-            logger.error(f'No provider for "{url}"')
-            continue
+            logger.warning(f'No provider for "{url}" found, using wget fallback')
+            provider = download_wget
 
         output_dir = DOWNLOAD_DIRECTORY / job.package_name
         output_dir.mkdir(parents=True, exist_ok=True)
