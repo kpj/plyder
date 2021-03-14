@@ -32,15 +32,17 @@
     <div class="container">
     {% for package in package_list %}
         <div class="border rounded m-3 p-1">
-            <h3> {{ package.name }} </h3>
+            <h3>
+                {{ package.name }}
 
-            {% if package.info.status == "done" %}
-                <span class="badge bg-success">Success</span>
-            {% elif package.info.status == "running" %}
-                <span class="badge bg-primary">Running</span>
-            {% elif package.info.status == "failed" %}
-                <span class="badge bg-danger">Failed</span>
-            {% endif %}
+                {% if package.info.status == "done" %}
+                    <span class="badge rounded-pill bg-success">Success</span>
+                {% elif package.info.status == "running" %}
+                    <span class="badge rounded-pill bg-primary">Running</span>
+                {% elif package.info.status == "failed" %}
+                    <span class="badge rounded-pill bg-danger">Failed</span>
+                {% endif %}
+            </h3>
 
             <textarea class="log-field form-control" readonly placeholder="{{ package.log }}" rows="10"></textarea>
         </div>
