@@ -1,5 +1,4 @@
 import json
-from pathlib import Path
 from urllib.parse import urlparse
 
 # from mega import Mega
@@ -7,9 +6,7 @@ import sh
 
 from loguru import logger
 
-
-DOWNLOAD_DIRECTORY = Path('plyder_downloads')
-DOWNLOAD_DIRECTORY.mkdir(parents=True, exist_ok=True)
+from .config import config
 
 
 def download_mega(url: str, output_dir: str):
@@ -61,7 +58,7 @@ def download_url(url: str, output_dir: str):
 
 
 def download_package(job: 'JobSubmission'):
-    output_dir = DOWNLOAD_DIRECTORY / job.package_name
+    output_dir = config['download_directory'] / job.package_name
     output_dir.mkdir(parents=True, exist_ok=True)
 
     logger.info(f'Processing "{job.package_name}"')
@@ -79,7 +76,7 @@ def download_package(job: 'JobSubmission'):
 
 
 def clean_packages():
-    for entry in DOWNLOAD_DIRECTORY.iterdir():
+    for entry in config['download_directory'].iterdir():
         with (entry / 'plyder.status').open() as fd:
             info = json.load(fd)
 
@@ -94,7 +91,7 @@ def clean_packages():
 
 def list_packages():
     res = []
-    for entry in DOWNLOAD_DIRECTORY.iterdir():
+    for entry in config['download_directory'].iterdir():
         with (entry / 'download.log').open() as fd:
             log_text = fd.read()
 

@@ -17,6 +17,9 @@ aiofiles = "^0.6.0"
 uvicorn = "^0.13.4"
 loguru = "^0.5.3"
 sh = "^1.14.1"
+appdirs = "^1.4.4"
+jsonschema = "^3.2.0"
+PyYAML = "^5.4.1"
 
 [tool.poetry.dev-dependencies]
 bump2version = "^1.0.1"
