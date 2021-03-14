@@ -39,27 +39,39 @@ PROVIDER_DICT = {'mega.nz': download_mega}
 
 
 @logger.catch
-def download_url(job: 'JobSubmission'):
-    for url in job.url_field:
-        o = urlparse(url)
-        logger.info(f'Processing "{url}"')
+def download_url(url: str, output_dir: str):
+    o = urlparse(url)
+    logger.info(f'Processing "{url}"')
 
-        provider = PROVIDER_DICT.get(o.netloc)
-        if provider is None:
-            logger.warning(f'No provider for "{url}" found, using wget fallback')
-            provider = download_wget
+    provider = PROVIDER_DICT.get(o.netloc)
+    if provider is None:
+        logger.warning(f'No provider for "{url}" found, using wget fallback')
+        provider = download_wget
 
-        output_dir = DOWNLOAD_DIRECTORY / job.package_name
-        output_dir.mkdir(parents=True, exist_ok=True)
+    logger.info(f'[{provider.__name__}] Downloading "{url}" to "{output_dir}"')
 
-        with (output_dir / 'plyder.status').open('w') as fd:
-            json.dump({'status': 'running'}, fd)
-
-        logger.info(f'[{provider.__name__}] Downloading "{url}" to "{output_dir}"')
+    try:
         provider(url, output_dir)
+    except Exception as e:
+        logger.exception(e)
+        return False
+    return True
 
-        with (output_dir / 'plyder.status').open('w') as fd:
-            json.dump({'status': 'done'}, fd)
+
+def download_package(job: 'JobSubmission'):
+    output_dir = DOWNLOAD_DIRECTORY / job.package_name
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    with (output_dir / 'plyder.status').open('w') as fd:
+        json.dump({'status': 'running'}, fd)
+
+    any_url_failed = False
+    for url in job.url_field:
+        success = download_url(url, output_dir)
+        any_url_failed |= not success
+
+    with (output_dir / 'plyder.status').open('w') as fd:
+        json.dump({'status': 'done' if success else 'failed'}, fd)
 
 
 def clean_packages():
