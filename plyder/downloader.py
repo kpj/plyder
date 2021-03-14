@@ -94,6 +94,9 @@ def clean_packages():
 def list_packages():
     res = []
     for entry in DOWNLOAD_DIRECTORY.iterdir():
+        with (entry / 'download.log').open() as fd:
+            log_text = fd.read()
+
         with (entry / 'plyder.status').open() as fd:
-            res.append({'name': entry.name, 'info': json.load(fd)})
+            res.append({'name': entry.name, 'info': json.load(fd), 'log': log_text})
     return res
