@@ -92,9 +92,15 @@ def clean_packages():
 def list_packages():
     res = []
     for entry in config['download_directory'].iterdir():
-        with (entry / 'download.log').open() as fd:
-            log_text = fd.read()[-10000:]  # truncate
+        # read log
+        log_file = entry / 'download.log'
+        if log_file.exists():
+            with log_file.open() as fd:
+                log_text = fd.read()[-10000:]  # truncate
+        else:
+            log_text = ''
 
+        # assemble information
         with (entry / 'plyder.status').open() as fd:
             res.append({'name': entry.name, 'info': json.load(fd), 'log': log_text})
     return res
