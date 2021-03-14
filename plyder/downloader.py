@@ -44,7 +44,6 @@ PROVIDER_DICT = {'mega.nz': download_mega}
 @logger.catch
 def download_url(url: str, output_dir: str):
     o = urlparse(url)
-    logger.info(f'Processing "{url}"')
 
     provider = PROVIDER_DICT.get(o.netloc)
     if provider is None:
@@ -65,6 +64,7 @@ def download_package(job: 'JobSubmission'):
     output_dir = DOWNLOAD_DIRECTORY / job.package_name
     output_dir.mkdir(parents=True, exist_ok=True)
 
+    logger.info(f'Processing "{job.package_name}"')
     with (output_dir / 'plyder.status').open('w') as fd:
         json.dump({'status': 'running'}, fd)
 
@@ -73,6 +73,7 @@ def download_package(job: 'JobSubmission'):
         success = download_url(url, output_dir)
         any_url_failed |= not success
 
+    logger.info(f'Finished "{job.package_name}"')
     with (output_dir / 'plyder.status').open('w') as fd:
         json.dump({'status': 'done' if success else 'failed'}, fd)
 
