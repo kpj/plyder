@@ -1,12 +1,15 @@
+from fastapi.testclient import TestClient
+
 import pytest
 
-import plyder
+from plyder.app import app
 
 
-@pytest.fixture
-def dummy(tmp_path):
-    return tmp_path / 'dummy.txt'
+@pytest.fixture(scope='module')
+def client():
+    return TestClient(app)
 
 
-def test_stub(dummy):
-    assert True
+def test_app(client):
+    response = client.get('/')
+    assert response.status_code == 200
