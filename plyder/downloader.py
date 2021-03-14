@@ -1,3 +1,4 @@
+import json
 from pathlib import Path
 from urllib.parse import urlparse
 
@@ -51,5 +52,33 @@ def download_url(job: 'JobSubmission'):
         output_dir = DOWNLOAD_DIRECTORY / job.package_name
         output_dir.mkdir(parents=True, exist_ok=True)
 
+        with (output_dir / 'plyder.status').open('w') as fd:
+            json.dump({'status': 'running'}, fd)
+
         logger.info(f'[{provider.__name__}] Downloading "{url}" to "{output_dir}"')
         provider(url, output_dir)
+
+        with (output_dir / 'plyder.status').open('w') as fd:
+            json.dump({'status': 'done'}, fd)
+
+
+def clean_packages():
+    for entry in DOWNLOAD_DIRECTORY.iterdir():
+        with (entry / 'plyder.status').open() as fd:
+            info = json.load(fd)
+
+        if info['status'] not in ('done', 'failed'):
+            logger.warning(
+                f'Package "{entry.name}" in inconsistent state, setting to failed'
+            )
+
+            with (entry / 'plyder.status').open('w') as fd:
+                json.dump({'status': 'failed'}, fd)
+
+
+def list_packages():
+    res = []
+    for entry in DOWNLOAD_DIRECTORY.iterdir():
+        with (entry / 'plyder.status').open() as fd:
+            res.append({'name': entry.name, 'info': json.load(fd)})
+    return res

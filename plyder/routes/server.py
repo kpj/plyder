@@ -7,7 +7,7 @@ from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel, validator
 
 from .. import templates
-from ..downloader import download_url
+from ..downloader import download_url, list_packages
 
 
 router = APIRouter(tags=['server'])
@@ -33,7 +33,9 @@ class JobSubmission(BaseModel):
 
 @router.get('/', response_class=HTMLResponse)
 async def root(request: Request):
-    return templates.TemplateResponse('index.html', {'request': request})
+    return templates.TemplateResponse(
+        'index.html', {'request': request, 'package_list': list_packages()}
+    )
 
 
 @router.post('/submit_job')

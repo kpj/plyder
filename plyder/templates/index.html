@@ -19,6 +19,17 @@
         <button onclick="submitJob()">Submit</button>
     </div>
 
+    <hr>
+
+    <ul id="package_list">
+    {% for package in package_list %}
+        <li>{{ package.name }}</li>
+        <ul>
+            <li>Status: {{ package.info.status }}</li>
+        </ul>
+    {% endfor %}
+    </ul>
+
     <script>
         function submitJob() {
             return axios.post("/submit_job", {
@@ -29,7 +40,9 @@
                     'Content-type': 'application/json',
                 }
             }).then((response) => {
-                console.log(response);
+                console.log(response)
+            }).catch((error) => {
+                console.log(error)
             })
         }
     </script>
