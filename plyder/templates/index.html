@@ -42,7 +42,7 @@
                 <span class="badge bg-danger">Failed</span>
             {% endif %}
 
-            <textarea class="form-control" readonly placeholder="{{ package.log }}" rows="10"></textarea>
+            <textarea class="log-field form-control" readonly placeholder="{{ package.log }}" rows="10"></textarea>
         </div>
     {% endfor %}
     </div>
@@ -62,6 +62,11 @@
             }).catch((error) => {
                 console.log(error)
             })
+        }
+
+        let logAreaList = document.getElementsByClassName("log-field")
+        for (let logArea of logAreaList) {
+            logArea.scrollTop = logArea.scrollHeight
         }
     </script>
 </body>
