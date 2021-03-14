@@ -93,7 +93,7 @@ def list_packages():
     res = []
     for entry in config['download_directory'].iterdir():
         with (entry / 'download.log').open() as fd:
-            log_text = fd.read()
+            log_text = fd.read()[-10000:]  # truncate
 
         with (entry / 'plyder.status').open() as fd:
             res.append({'name': entry.name, 'info': json.load(fd), 'log': log_text})
