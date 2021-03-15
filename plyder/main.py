@@ -1,9 +1,14 @@
 import uvicorn
 
+from loguru import logger
+
+from .__version__ import __version__
 from .config import config
 
 
 def main():
+    logger.info(f'plyder v{__version__}')
+
     config['download_directory'].mkdir(parents=True, exist_ok=True)
 
     uvicorn.run(

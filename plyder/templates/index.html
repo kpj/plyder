@@ -1,6 +1,6 @@
 <html>
 <head>
-    <title>plyder</title>
+    <title>plyder v{{ version }}</title>
 
     <link href="{{ url_for('static', path='/bootstrap.min.css') }}" rel="stylesheet">
     <link href="{{ url_for('static', path='/styles.css') }}" rel="stylesheet">
@@ -8,7 +8,7 @@
     <script src="{{ url_for('static', path='/axios.min.js') }}"></script>
 </head>
 <body>
-    <h1 class="text-center">plyder</h1>
+    <h1 class="text-center">plyder <small class="text-muted">v{{ version }}</small></h1>
 
     <h2 class="text-left">Add new package</h2>
     <div class="container">

@@ -3,6 +3,8 @@ import importlib.resources as pkg_resources
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 
+from loguru import logger
+
 from . import static
 from .routes import server
 
@@ -20,3 +22,4 @@ app.include_router(server.router)
 @app.on_event('startup')
 def startup_event():
     clean_packages()
+    logger.info('Server started')

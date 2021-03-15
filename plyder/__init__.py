@@ -1,9 +1,5 @@
-from importlib import metadata
-
+from .__version__ import __version__
 from .main import main
-
-
-__version__ = metadata.version('plyder')
 
 
 __all__ = ['__version__', 'main']

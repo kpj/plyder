@@ -6,6 +6,7 @@ from fastapi.templating import Jinja2Templates
 
 from pydantic import BaseModel, validator
 
+from ..__version__ import __version__
 from .. import templates
 from ..downloader import download_package, list_packages
 
@@ -34,7 +35,8 @@ class JobSubmission(BaseModel):
 @router.get('/', response_class=HTMLResponse)
 async def root(request: Request):
     return templates.TemplateResponse(
-        'index.html', {'request': request, 'package_list': list_packages()}
+        'index.html',
+        {'request': request, 'version': __version__, 'package_list': list_packages()},
     )
 
 
