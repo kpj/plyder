@@ -11,6 +11,10 @@ from loguru import logger
 from .config import config
 
 
+STATUS_FILENAME = '.plyder.status'
+LOG_FILENAME = '.download.log'
+
+
 def download_mega(url: str, output_dir: str):
     # mega = Mega()
     # m = mega.login()
@@ -62,10 +66,10 @@ def download_package(job: 'JobSubmission'):
     output_dir.mkdir(parents=True, exist_ok=True)
 
     logger.info(f'Processing "{job.package_name}"')
-    with (output_dir / 'plyder.status').open('w') as fd:
+    with (output_dir / STATUS_FILENAME).open('w') as fd:
         json.dump({'status': 'running'}, fd)
 
-    with (output_dir / 'download.log').open('w') as fd:
+    with (output_dir / LOG_FILENAME).open('w') as fd:
         with redirect_stdout(fd):
             any_url_failed = False
             for url in job.url_field:
@@ -73,7 +77,7 @@ def download_package(job: 'JobSubmission'):
                 any_url_failed |= not success
 
     logger.info(f'Finished "{job.package_name}"')
-    with (output_dir / 'plyder.status').open('w') as fd:
+    with (output_dir / STATUS_FILENAME).open('w') as fd:
         json.dump({'status': 'failed' if any_url_failed else 'done'}, fd)
 
 
@@ -88,7 +92,7 @@ def clean_packages():
         if not entry.is_dir():
             continue
 
-        status_file = entry / 'plyder.status'
+        status_file = entry / STATUS_FILENAME
         if not status_file.exists():
             continue
 
@@ -114,7 +118,7 @@ def list_packages():
     res = []
     for entry in config['download_directory'].iterdir():
         # read log
-        log_file = entry / 'download.log'
+        log_file = entry / LOG_FILENAME
         if log_file.exists():
             with log_file.open() as fd:
                 log_text = fd.read()[-10000:]  # truncate
@@ -122,7 +126,7 @@ def list_packages():
             log_text = ''
 
         # assemble information
-        status_file = entry / 'plyder.status'
+        status_file = entry / STATUS_FILENAME
         if status_file.exists():
             with status_file.open() as fd:
                 info = json.load(fd)
