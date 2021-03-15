@@ -44,7 +44,7 @@ def get_config():
     jsonschema.validate(instance=config, schema=CONFIG_SCHEMA)
 
     # prepare some values
-    config['download_directory'] = Path(config['download_directory'])
+    config['download_directory'] = Path(config['download_directory']).expanduser()
 
     return config
 
