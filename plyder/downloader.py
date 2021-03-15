@@ -74,7 +74,7 @@ def download_package(job: 'JobSubmission'):
 
     logger.info(f'Finished "{job.package_name}"')
     with (output_dir / 'plyder.status').open('w') as fd:
-        json.dump({'status': 'done' if success else 'failed'}, fd)
+        json.dump({'status': 'failed' if any_url_failed else 'done'}, fd)
 
 
 def clean_packages():
