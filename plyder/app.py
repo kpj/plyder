@@ -8,6 +8,7 @@ from loguru import logger
 from . import static
 from .routes import server
 
+from .config import config
 from .downloader import clean_packages
 
 
@@ -22,4 +23,4 @@ app.include_router(server.router)
 @app.on_event('startup')
 def startup_event():
     clean_packages()
-    logger.info('Server started')
+    logger.info(f'Server {config["ip_host"]}:{config["port"]} started')
