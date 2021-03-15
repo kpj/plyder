@@ -9,8 +9,6 @@ from .config import config
 def main():
     logger.info(f'plyder v{__version__}')
 
-    config['download_directory'].mkdir(parents=True, exist_ok=True)
-
     uvicorn.run(
         'plyder.app:app',
         host=config['ip_host'],

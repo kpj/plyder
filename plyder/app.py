@@ -22,5 +22,6 @@ app.include_router(server.router)
 
 @app.on_event('startup')
 def startup_event():
+    config['download_directory'].mkdir(parents=True, exist_ok=True)
     clean_packages()
     logger.info(f'Server {config["ip_host"]}:{config["port"]} started')
