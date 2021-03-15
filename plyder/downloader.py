@@ -85,7 +85,14 @@ def clean_packages():
         return
 
     for entry in config['download_directory'].iterdir():
-        with (entry / 'plyder.status').open() as fd:
+        if not entry.is_dir():
+            continue
+
+        status_file = entry / 'plyder.status'
+        if not status_file.exists():
+            continue
+
+        with status_file.open() as fd:
             info = json.load(fd)
 
         if info['status'] not in ('done', 'failed'):
@@ -93,7 +100,7 @@ def clean_packages():
                 f'Package "{entry.name}" in inconsistent state, setting to failed'
             )
 
-            with (entry / 'plyder.status').open('w') as fd:
+            with status_file.open('w') as fd:
                 json.dump({'status': 'failed'}, fd)
 
 
@@ -115,6 +122,12 @@ def list_packages():
             log_text = ''
 
         # assemble information
-        with (entry / 'plyder.status').open() as fd:
-            res.append({'name': entry.name, 'info': json.load(fd), 'log': log_text})
+        status_file = entry / 'plyder.status'
+        if status_file.exists():
+            with status_file.open() as fd:
+                info = json.load(fd)
+        else:
+            info = {'status': 'unknown'}
+
+        res.append({'name': entry.name, 'info': info, 'log': log_text})
     return res

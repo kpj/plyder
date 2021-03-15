@@ -41,6 +41,8 @@
                     <span class="badge rounded-pill bg-info">Running</span>
                 {% elif package.info.status == "failed" %}
                     <span class="badge rounded-pill bg-danger">Failed</span>
+                {% elif package.info.status == "unknown" %}
+                    <span class="badge rounded-pill bg-dark">Unknown</span>
                 {% endif %}
             </h3>
 
