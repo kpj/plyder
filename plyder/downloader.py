@@ -1,5 +1,7 @@
+import sys
 import json
 from urllib.parse import urlparse
+from contextlib import redirect_stdout
 
 # from mega import Mega
 import sh
@@ -18,9 +20,8 @@ def download_mega(url: str, output_dir: str):
         '--path',
         output_dir,
         url,
-        _out=str(output_dir / 'download.log'),
+        _out=sys.stdout,
         _err_to_out=True,
-        _out_bufsize=0,
     )
 
 
@@ -29,9 +30,8 @@ def download_wget(url: str, output_dir: str):
         '--directory-prefix',
         output_dir,
         url,
-        _out=str(output_dir / 'download.log'),
+        _out=sys.stdout,
         _err_to_out=True,
-        _out_bufsize=0,
     )
 
 
@@ -65,10 +65,12 @@ def download_package(job: 'JobSubmission'):
     with (output_dir / 'plyder.status').open('w') as fd:
         json.dump({'status': 'running'}, fd)
 
-    any_url_failed = False
-    for url in job.url_field:
-        success = download_url(url, output_dir)
-        any_url_failed |= not success
+    with (output_dir / 'download.log').open('w') as fd:
+        with redirect_stdout(fd):
+            any_url_failed = False
+            for url in job.url_field:
+                success = download_url(url, output_dir)
+                any_url_failed |= not success
 
     logger.info(f'Finished "{job.package_name}"')
     with (output_dir / 'plyder.status').open('w') as fd:
