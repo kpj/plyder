@@ -14,3 +14,9 @@ $ pip install plyder
 
 
 ## Usage
+
+```bash
+$ plyder
+```
+
+`plyder` works out of the box. Though you might want to adapt the configuration to your taste.
