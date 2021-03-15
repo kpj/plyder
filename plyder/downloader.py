@@ -76,6 +76,12 @@ def download_package(job: 'JobSubmission'):
 
 
 def clean_packages():
+    if not config['download_directory'].exists():
+        logger.warning(
+            f'Download directory ({config["download_directory"]}) does not exist.'
+        )
+        return
+
     for entry in config['download_directory'].iterdir():
         with (entry / 'plyder.status').open() as fd:
             info = json.load(fd)
@@ -90,6 +96,12 @@ def clean_packages():
 
 
 def list_packages():
+    if not config['download_directory'].exists():
+        logger.warning(
+            f'Download directory ({config["download_directory"]}) does not exist.'
+        )
+        return []
+
     res = []
     for entry in config['download_directory'].iterdir():
         # read log
