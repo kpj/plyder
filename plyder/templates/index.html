@@ -36,7 +36,7 @@
                 {{ package.name }}
 
                 {% if package.info.status == "done" %}
-                    <span class="badge rounded-pill bg-success">Success</span>
+                    <span class="badge rounded-pill bg-success">Done</span>
                 {% elif package.info.status == "running" %}
                     <span class="badge rounded-pill bg-info">Running</span>
                 {% elif package.info.status == "failed" %}
