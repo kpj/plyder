@@ -8,7 +8,7 @@ from pydantic import BaseModel, validator
 
 from ..__version__ import __version__
 from .. import templates
-from ..downloader import download_package, list_packages
+from ..downloader import download_package, list_packages, get_server_info
 
 
 router = APIRouter(tags=['server'])
@@ -36,7 +36,12 @@ class JobSubmission(BaseModel):
 async def root(request: Request):
     return templates.TemplateResponse(
         'index.html',
-        {'request': request, 'version': __version__, 'package_list': list_packages()},
+        {
+            'request': request,
+            'version': __version__,
+            'package_list': list_packages(),
+            'server_info': get_server_info(),
+        },
     )
 
 

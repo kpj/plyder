@@ -8,47 +8,84 @@
     <script src="{{ url_for('static', path='/axios.min.js') }}"></script>
 </head>
 <body>
-    <h1 class="text-center">plyder <small class="text-muted">v{{ version }}</small></h1>
-
-    <h2 class="text-left">Add new package</h2>
     <div class="container">
-        <div class="mb-3">
-            <label for="package_name" class="form-label">Package Name:</label>
-            <input type="text" class="form-control" id="package_name">
+        <h1 class="text-center">plyder <small class="text-muted">v{{ version }}</small></h1>
+
+        <hr>
+
+        <div class="row">
+            <div class="col">
+                <div class="sticky-top">
+                    <div class="row">
+                        <h2 class="text-left">Server Info</h2>
+
+                        <table id ="server_info_table" class="table table-striped table-borderless table-sm ">
+                            <tbody>
+                                <tr>
+                                    <td> Download Directory </td>
+                                    <td> {{ server_info.download_directory }} </td>
+                                </tr>
+                                <tr>
+                                    <td> Disk Usage </td>
+                                    <td> {{ server_info.disk_usage.used }} / {{ server_info.disk_usage.total }} </td>
+                                </tr>
+                                <tr>
+                                    <td> Memory </td>
+                                    <td> {{ server_info.process.memory }} % </td>
+                                </tr>
+                                <tr>
+                                    <td> CPU </td>
+                                    <td> {{ server_info.process.cpu }} % </td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                    </div>
+
+                    <hr>
+
+                    <div class="row">
+                        <h2 class="text-left">Add new package</h2>
+                        <div class="mb-3">
+                            <label for="package_name" class="form-label">Package Name:</label>
+                            <input type="text" class="form-control" id="package_name">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="url_field" class="form-label">URL field:</label>
+                            <textarea class="form-control" id="url_field" aria-describedby="url_field_help"></textarea>
+                            <div id="url_field_help" class="form-text">Separate multiple URLs by newlines</div>
+                        </div>
+
+                        <button onclick="submitJob()" class="btn btn-primary">Add</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-8">
+                <h2 class="text-left">Existing packages</h2>
+
+                {% for package in package_list %}
+                    <div class="border rounded m-3 p-1">
+                        <h3>
+                            {{ package.name }}
+
+                            {% if package.info.status == "done" %}
+                                <span class="badge rounded-pill bg-success">Done</span>
+                            {% elif package.info.status == "running" %}
+                                <span class="badge rounded-pill bg-info">Running</span>
+                            {% elif package.info.status == "failed" %}
+                                <span class="badge rounded-pill bg-danger">Failed</span>
+                            {% elif package.info.status == "unknown" %}
+                                <span class="badge rounded-pill bg-dark">Unknown</span>
+                            {% endif %}
+                        </h3>
+
+                        <textarea class="log-field form-control" readonly placeholder="{{ package.log }}" rows="10"></textarea>
+                    </div>
+                {% endfor %}
+            </div>
         </div>
-
-        <div class="mb-3">
-            <label for="url_field" class="form-label">URL field:</label>
-            <textarea class="form-control" id="url_field" aria-describedby="url_field_help"></textarea>
-            <div id="url_field_help" class="form-text">Separate multiple URLs by newlines.</div>
-        </div>
-
-        <button onclick="submitJob()" class="btn btn-primary">Add</button>
-    </div>
-
-    <hr>
-
-    <h2 class="text-left">Existing packages</h2>
-    <div class="container">
-    {% for package in package_list %}
-        <div class="border rounded m-3 p-1">
-            <h3>
-                {{ package.name }}
-
-                {% if package.info.status == "done" %}
-                    <span class="badge rounded-pill bg-success">Done</span>
-                {% elif package.info.status == "running" %}
-                    <span class="badge rounded-pill bg-info">Running</span>
-                {% elif package.info.status == "failed" %}
-                    <span class="badge rounded-pill bg-danger">Failed</span>
-                {% elif package.info.status == "unknown" %}
-                    <span class="badge rounded-pill bg-dark">Unknown</span>
-                {% endif %}
-            </h3>
-
-            <textarea class="log-field form-control" readonly placeholder="{{ package.log }}" rows="10"></textarea>
-        </div>
-    {% endfor %}
     </div>
 
     <script>

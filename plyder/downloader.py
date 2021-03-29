@@ -1,14 +1,17 @@
 import sys
 import json
+import shutil
 from urllib.parse import urlparse
 from contextlib import redirect_stdout
 
 # from mega import Mega
 import sh
+import humanize
 
 from loguru import logger
 
 from .config import config
+from .utils import get_process_memory, get_process_cpu
 
 
 STATUS_FILENAME = '.plyder.status'
@@ -135,3 +138,20 @@ def list_packages():
 
         res.append({'name': entry.name, 'info': info, 'log': log_text})
     return res
+
+
+def get_server_info():
+    total, used, free = shutil.disk_usage(config['download_directory'])
+
+    return {
+        'download_directory': str(config['download_directory']),
+        'disk_usage': {
+            'total': humanize.naturalsize(total),
+            'used': humanize.naturalsize(used),
+            'free': humanize.naturalsize(free),
+        },
+        'process': {
+            'memory': round(get_process_memory(), 2),
+            'cpu': round(get_process_cpu(), 2),
+        },
+    }
