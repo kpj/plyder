@@ -141,7 +141,10 @@ def list_packages():
 
 
 def get_server_info():
-    total, used, free = shutil.disk_usage(config['download_directory'])
+    if config['download_directory'].exists():
+        total, used, free = shutil.disk_usage(config['download_directory'])
+    else:
+        total, used, free = -1, -1, -1
 
     return {
         'download_directory': str(config['download_directory']),
