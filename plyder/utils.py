@@ -4,7 +4,6 @@ import psutil
 
 
 def get_process_memory():
-    print(os.getpid())
     proc = psutil.Process(os.getpid())
 
     mem = proc.memory_percent()
