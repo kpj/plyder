@@ -130,10 +130,12 @@ def list_packages():
 
         # assemble information
         status_file = entry / STATUS_FILENAME
-        if status_file.exists():
+        try:
             with status_file.open() as fd:
                 info = json.load(fd)
-        else:
+        except (FileNotFoundError, json.decoder.JSONDecodeError):
+            # due to race conditions, the file may not contain valid JSON
+            # even if it exists
             info = {'status': 'unknown'}
 
         res.append({'name': entry.name, 'info': info, 'log': log_text})
