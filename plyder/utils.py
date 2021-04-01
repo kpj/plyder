@@ -1,4 +1,5 @@
 import os
+import datetime
 
 import psutil
 
@@ -21,3 +22,7 @@ def get_process_cpu():
         cpu += child.cpu_percent(interval=0.01)  # TODO: performance impact?
 
     return cpu
+
+
+def get_current_time():
+    return datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')

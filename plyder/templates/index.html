@@ -67,6 +67,8 @@
 
                 {% for package in package_list %}
                     <div class="border rounded m-3 p-1">
+                        <span class="text-muted float-end" style="font-size:0.7em"> {{ package.info.start_time }} -- {{ package.info.end_time|d('?') }} </span>
+
                         <h3>
                             {{ package.name }}
 

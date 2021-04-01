@@ -11,7 +11,7 @@ import humanize
 from loguru import logger
 
 from .config import config
-from .utils import get_process_memory, get_process_cpu
+from .utils import get_process_memory, get_process_cpu, get_current_time
 
 
 STATUS_FILENAME = '.plyder.status'
@@ -65,12 +65,15 @@ def download_url(url: str, output_dir: str):
 
 
 def download_package(job: 'JobSubmission'):
+    # prepare environment
     output_dir = config['download_directory'] / job.package_name
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    logger.info(f'Processing "{job.package_name}"')
     with (output_dir / STATUS_FILENAME).open('w') as fd:
-        json.dump({'status': 'running'}, fd)
+        json.dump({'status': 'running', 'start_time': get_current_time()}, fd)
+
+    # download
+    logger.info(f'Processing "{job.package_name}"')
 
     with (output_dir / LOG_FILENAME).open('w') as fd:
         with redirect_stdout(fd):
@@ -80,8 +83,16 @@ def download_package(job: 'JobSubmission'):
                 any_url_failed |= not success
 
     logger.info(f'Finished "{job.package_name}"')
+
+    # update final status
+    with (output_dir / STATUS_FILENAME).open() as fd:
+        status_data = json.load(fd)
+
+    status_data['status'] = 'failed' if any_url_failed else 'done'
+    status_data['end_time'] = get_current_time()
+
     with (output_dir / STATUS_FILENAME).open('w') as fd:
-        json.dump({'status': 'failed' if any_url_failed else 'done'}, fd)
+        json.dump(status_data, fd)
 
 
 def clean_packages():
