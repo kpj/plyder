@@ -1,3 +1,28 @@
+{% set badge_types = {
+    "done": "bg-success",
+    "running": "bg-info",
+    "failed": "bg-danger",
+    "unknown": "bg-dark"
+} %}
+
+{% macro status_badge(status) -%}
+    <span class="badge rounded-pill {{ badge_types[status] }}">
+        {{ status }}
+    </span>
+{%- endmacro %}
+
+{% macro status_count_badge(status) -%}
+    {% set status_count = package_list|selectattr("info.status", "equalto", status)|list|length %}
+
+    {% if status_count > 0%}
+        <span class="float-end badge rounded-pill {{ badge_types[status] }}">
+            {{ status_count }}
+        </span>
+        <span class="float-end">&ensp;</span>
+    {% endif %}
+{%- endmacro %}
+
+
 <html>
 <head>
     <title>plyder v{{ version }}</title>
@@ -63,7 +88,15 @@
             </div>
 
             <div class="col-lg-8">
-                <h2 class="text-left">Existing packages</h2>
+                <h2 class="text-left">
+                    Existing packages
+
+                    {# reverse order due to float-end #}
+                    {{ status_count_badge("unknown") }}
+                    {{ status_count_badge("failed") }}
+                    {{ status_count_badge("running") }}
+                    {{ status_count_badge("done") }}
+                </h2>
 
                 {% for package in package_list %}
                     <div class="border rounded m-3 p-1">
@@ -73,13 +106,13 @@
                             {{ package.name }}
 
                             {% if package.info.status == "done" %}
-                                <span class="badge rounded-pill bg-success">Done</span>
+                                {{ status_badge("done") }}
                             {% elif package.info.status == "running" %}
-                                <span class="badge rounded-pill bg-info">Running</span>
+                                {{ status_badge("running") }}
                             {% elif package.info.status == "failed" %}
-                                <span class="badge rounded-pill bg-danger">Failed</span>
+                                {{ status_badge("failed") }}
                             {% elif package.info.status == "unknown" %}
-                                <span class="badge rounded-pill bg-dark">Unknown</span>
+                                {{ status_badge("unknown") }}
                             {% endif %}
                         </h3>
 
