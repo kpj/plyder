@@ -5,6 +5,8 @@
 
 Download manager with web-interface.
 
+<img src="gallery/web-interface.png" width="100%">
+
 
 ## Installation
 
