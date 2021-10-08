@@ -10,7 +10,7 @@ include = ["plyder/templates/*", "plyder/static/*"]
 
 [tool.poetry.dependencies]
 python = "^3.8.0"
-fastapi = ">=0.63,<0.69"
+fastapi = ">=0.63,<0.71"
 "mega.py" = "^1.0.8"
 Jinja2 = ">=2.11.3,<4.0.0"
 aiofiles = ">=0.6,<0.8"
