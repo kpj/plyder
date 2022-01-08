@@ -22,3 +22,26 @@ $ plyder
 ```
 
 `plyder` works out of the box. Though you might want to adapt the configuration to your taste.
+
+### Custom download scripts
+
+Custom download scripts can be specified in the configuration file:
+
+```yaml
+download_handlers:
+    - ./github_downloader.sh
+```
+
+`./github_downloader.sh` needs to be an executable script of the following form:
+
+```bash
+#!/usr/bin/env bash
+# PLYDER_HOST: <host to match>
+
+url="$1"
+output_dir="$2"
+
+<custom logic>
+```
+
+See `plyder/download_providers/` for built-in examples.

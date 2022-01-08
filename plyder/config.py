@@ -11,6 +11,7 @@ DEFAULT_CONFIG = {
     'download_directory': '~/Downloads/',
     'ip_host': '0.0.0.0',
     'port': 5000,
+    'download_handlers': [],
 }
 
 CONFIG_SCHEMA = {
@@ -19,6 +20,12 @@ CONFIG_SCHEMA = {
         'download_directory': {'type': 'string'},
         'ip_host': {'type': 'string'},
         'port': {'type': 'integer'},
+        'download_handlers': {
+            'type': 'array',
+            'items': {
+                'type': 'string',
+            },
+        },
     },
     'additionalProperties': False,
     'required': list(DEFAULT_CONFIG.keys()),

@@ -4,7 +4,6 @@ import shutil
 from urllib.parse import urlparse
 from contextlib import redirect_stdout
 
-# from mega import Mega
 import sh
 import humanize
 
@@ -12,59 +11,39 @@ from loguru import logger
 
 from .config import config
 from .utils import get_process_memory, get_process_cpu, get_current_time
+from .download_handlers import DEFAULT_PROVIDER, get_provider_dict
 
 
 STATUS_FILENAME = '.plyder.status'
 LOG_FILENAME = '.download.log'
 
-
-def download_mega(url: str, output_dir: str):
-    # mega = Mega()
-    # m = mega.login()
-    # m.download_url(url=url, dest_path=output_dir)
-
-    sh.megadl(
-        '--path',
-        output_dir,
-        url,
-        _out=sys.stdout,
-        _err_to_out=True,
-    )
-
-
-def download_wget(url: str, output_dir: str):
-    sh.wget(
-        '--directory-prefix',
-        output_dir,
-        url,
-        _out=sys.stdout,
-        _err_to_out=True,
-    )
-
-
-PROVIDER_DICT = {'mega.nz': download_mega}
+PROVIDER_DICT = get_provider_dict(config)
 
 
 @logger.catch
-def download_url(url: str, output_dir: str):
+def download_url(url: str, output_dir: str) -> bool:
     o = urlparse(url)
 
     provider = PROVIDER_DICT.get(o.netloc)
     if provider is None:
         logger.warning(f'No provider for "{url}" found, using wget fallback')
-        provider = download_wget
+        provider = DEFAULT_PROVIDER
 
-    logger.info(f'[{provider.__name__}] Downloading "{url}" to "{output_dir}"')
+    logger.info(f'[{provider["name"]}] Downloading "{url}" to "{output_dir}"')
 
     try:
-        provider(url, output_dir)
+        func = provider['function']
+        if isinstance(func, sh.Command):
+            func(url, output_dir, _out=sys.stdout, _err_to_out=True)
+        else:
+            func(url, output_dir)
     except Exception as e:
         logger.exception(e)
         return False
     return True
 
 
-def download_package(job: 'JobSubmission'):
+def download_package(job: 'JobSubmission') -> None:
     # prepare environment
     output_dir = config['download_directory'] / job.package_name
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -95,7 +74,7 @@ def download_package(job: 'JobSubmission'):
         json.dump(status_data, fd)
 
 
-def clean_packages():
+def clean_packages() -> None:
     if not config['download_directory'].exists():
         logger.warning(
             f'Download directory ({config["download_directory"]}) does not exist.'
