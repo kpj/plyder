@@ -110,6 +110,9 @@ def list_packages():
 
     res = []
     for entry in config['download_directory'].iterdir():
+        if not entry.is_dir():
+            continue
+
         # read log
         log_file = entry / LOG_FILENAME
         if log_file.exists():
