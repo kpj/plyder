@@ -49,7 +49,7 @@ def get_provider_dict(config):
 
         for host in host_list:
             if host in provider_dict:
-                logger.warning(f'[{entry}] Overriding downloader for {entry["host"]}')
+                logger.warning(f'[{entry}] Overriding downloader for {host}')
 
             provider_dict[host] = {'name': host, 'function': sh.Command(entry)}
 
