@@ -10,7 +10,7 @@ from . import download_providers
 
 def download_wget(url: str, output_dir: str) -> None:
     sh.wget(
-        '--directory-prefix',
+        "--directory-prefix",
         output_dir,
         url,
         _out=sys.stdout,
@@ -18,7 +18,7 @@ def download_wget(url: str, output_dir: str) -> None:
     )
 
 
-def get_hosts_from_provider_script(path, host_line_prefix='# PLYDER_HOST:'):
+def get_hosts_from_provider_script(path, host_line_prefix="# PLYDER_HOST:"):
     host_list = []
     with path.open() as fd:
         for line in fd.readlines():
@@ -33,27 +33,27 @@ def get_hosts_from_provider_script(path, host_line_prefix='# PLYDER_HOST:'):
 def get_provider_dict(config):
     handler_scripts = [
         *pkg_resources.files(download_providers).iterdir(),  # built-in handlers,
-        *(Path(p).resolve() for p in config['download_handlers']),  # custom handlers
+        *(Path(p).resolve() for p in config["download_handlers"]),  # custom handlers
     ]
 
     # generate provider information
     provider_dict = {}
 
     for entry in handler_scripts:
-        if entry.name.startswith('__'):
+        if entry.name.startswith("__"):
             continue
 
         host_list = get_hosts_from_provider_script(entry)
         if len(host_list) == 0:
-            logger.warning(f'[{entry}] No hosts specified, skipping')
+            logger.warning(f"[{entry}] No hosts specified, skipping")
 
         for host in host_list:
             if host in provider_dict:
-                logger.warning(f'[{entry}] Overriding downloader for {host}')
+                logger.warning(f"[{entry}] Overriding downloader for {host}")
 
-            provider_dict[host] = {'name': host, 'function': sh.Command(entry)}
+            provider_dict[host] = {"name": host, "function": sh.Command(entry)}
 
     return provider_dict
 
 
-DEFAULT_PROVIDER = {'name': download_wget.__name__, 'function': download_wget}
+DEFAULT_PROVIDER = {"name": download_wget.__name__, "function": download_wget}
