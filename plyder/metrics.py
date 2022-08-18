@@ -6,7 +6,6 @@ from .downloader import list_packages, get_server_info
 def assemble_metrics():
     # count packages
     pkg_list = list_packages()
-    print(pkg_list)
     pkg_done_count = sum(pkg["info"]["status"] == "done" for pkg in pkg_list)
     pkg_running_count = sum(pkg["info"]["status"] == "running" for pkg in pkg_list)
     pkg_failed_count = sum(pkg["info"]["status"] == "failed" for pkg in pkg_list)
