@@ -1,7 +1,7 @@
 import importlib.resources as pkg_resources
 
 from fastapi import APIRouter, BackgroundTasks, Request
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, Response
 from fastapi.templating import Jinja2Templates
 
 from pydantic import BaseModel, validator
@@ -9,6 +9,7 @@ from pydantic import BaseModel, validator
 from ..__version__ import __version__
 from .. import templates
 from ..downloader import download_package, list_packages, get_server_info
+from ..metrics import assemble_metrics
 
 
 router = APIRouter(tags=["server"])
@@ -49,3 +50,8 @@ async def root(request: Request):
 async def submit_job(background_tasks: BackgroundTasks, job: JobSubmission):
     background_tasks.add_task(download_package, job=job)
     return {"status": "good"}
+
+
+@router.get("/metrics")
+async def metrics(request: Request):
+    return Response(content=assemble_metrics(), media_type="text/plain")

@@ -148,6 +148,11 @@ def get_server_info():
             "used": humanize.naturalsize(used),
             "free": humanize.naturalsize(free),
         },
+        "disk_usage_raw": {
+            "total": total,
+            "used": used,
+            "free": free,
+        },
         "process": {
             "memory": round(get_process_memory(), 2),
             "cpu": round(get_process_cpu(), 2),

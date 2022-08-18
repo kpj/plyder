@@ -45,3 +45,7 @@ output_dir="$2"
 ```
 
 See `plyder/download_providers/` for built-in examples.
+
+### Prometheus integration
+
+`plyder` exposes the `/metric` resource which allows monitoring download counts and system usage using [Prometheus](https://prometheus.io/) and, e.g., [Grafana](https://grafana.com/).
