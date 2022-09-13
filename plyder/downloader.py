@@ -1,6 +1,7 @@
 import sys
 import json
 import shutil
+import datetime
 from urllib.parse import urlparse
 from contextlib import redirect_stdout
 
@@ -132,7 +133,15 @@ def list_packages():
             info = {"status": "unknown"}
 
         res.append({"name": entry.name, "info": info, "log": log_text})
-    return res
+
+    # sort packages by download started date
+    return sorted(
+        res,
+        key=lambda x: datetime.datetime.strptime(
+            x["info"]["start_time"], "%Y-%m-%d %H:%M:%S"
+        ),
+        reverse=True,
+    )
 
 
 def get_server_info():
