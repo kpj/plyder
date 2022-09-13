@@ -138,7 +138,7 @@ def list_packages():
     return sorted(
         res,
         key=lambda x: datetime.datetime.strptime(
-            x["info"]["start_time"], "%Y-%m-%d %H:%M:%S"
+            x["info"].get("start_time", "1970-01-01 00:00:00"), "%Y-%m-%d %H:%M:%S"
         ),
         reverse=True,
     )
