@@ -10,7 +10,7 @@ include = ["plyder/templates/*", "plyder/static/*"]
 
 [tool.poetry.dependencies]
 python = "^3.9.0"
-fastapi = ">=0.63,<0.87"
+fastapi = "^0.92.0"
 "mega.py" = "^1.0.8"
 Jinja2 = ">=2.11.3,<4.0.0"
 aiofiles = ">=0.6,<22.2"
@@ -29,6 +29,7 @@ black = "^23.1"
 pytest = "^7.0.0"
 pytest-mock = "^3.6.1"
 beautifulsoup4 = "^4.10.0"
+fastapi = {extras = ["all"], version = "^0.92.0"}
 
 [tool.poetry.scripts]
 plyder = "plyder:main"
