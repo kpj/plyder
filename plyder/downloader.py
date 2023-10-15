@@ -1,6 +1,7 @@
 import sys
 import json
 import shutil
+import pathlib
 import datetime
 from urllib.parse import urlparse
 from contextlib import redirect_stdout
@@ -44,13 +45,34 @@ def download_url(url: str, output_dir: str) -> bool:
     return True
 
 
+def update_package_status(
+    status: str, output_dir: pathlib.Path, time_key: str | None = None
+) -> None:
+    status_file = output_dir / STATUS_FILENAME
+
+    # current status data
+    status_data = {}
+    if status_file.exists():
+        with (output_dir / STATUS_FILENAME).open() as fd:
+            status_data = json.load(fd)
+
+    # set fields
+    status_data["status"] = status
+
+    if time_key is not None:
+        status_data[time_key] = get_current_time()
+
+    # store result
+    with status_file.open("w") as fd:
+        json.dump(status_data, fd)
+
+
 def download_package(job: "JobSubmission") -> None:
     # prepare environment
     output_dir = config["download_directory"] / job.package_name
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    with (output_dir / STATUS_FILENAME).open("w") as fd:
-        json.dump({"status": "running", "start_time": get_current_time()}, fd)
+    update_package_status("running", output_dir, time_key="start_time")
 
     # download
     logger.info(f'Processing "{job.package_name}"')
@@ -65,14 +87,9 @@ def download_package(job: "JobSubmission") -> None:
     logger.info(f'Finished "{job.package_name}"')
 
     # update final status
-    with (output_dir / STATUS_FILENAME).open() as fd:
-        status_data = json.load(fd)
-
-    status_data["status"] = "failed" if any_url_failed else "done"
-    status_data["end_time"] = get_current_time()
-
-    with (output_dir / STATUS_FILENAME).open("w") as fd:
-        json.dump(status_data, fd)
+    update_package_status(
+        "failed" if any_url_failed else "done", output_dir, time_key="end_time"
+    )
 
 
 def clean_packages() -> None:
