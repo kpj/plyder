@@ -12,6 +12,7 @@ DEFAULT_CONFIG = {
     "ip_host": "0.0.0.0",
     "port": 5000,
     "download_handlers": [],
+    "max_parallel_downloads": 1,
 }
 
 CONFIG_SCHEMA = {
@@ -26,6 +27,7 @@ CONFIG_SCHEMA = {
                 "type": "string",
             },
         },
+        "max_parallel_downloads": {"type": "integer"},
     },
     "additionalProperties": False,
     "required": list(DEFAULT_CONFIG.keys()),

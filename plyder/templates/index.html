@@ -1,6 +1,7 @@
 {% set badge_types = {
     "done": "bg-success",
     "running": "bg-info",
+    "queued": "bg-secondary",
     "failed": "bg-danger",
     "unknown": "bg-dark"
 } %}
@@ -94,6 +95,7 @@
                     {# reverse order due to float-end #}
                     {{ status_count_badge("unknown") }}
                     {{ status_count_badge("failed") }}
+                    {{ status_count_badge("queued") }}
                     {{ status_count_badge("running") }}
                     {{ status_count_badge("done") }}
                 </h2>
@@ -105,15 +107,7 @@
                         <h3>
                             {{ package.name }}
 
-                            {% if package.info.status == "done" %}
-                                {{ status_badge("done") }}
-                            {% elif package.info.status == "running" %}
-                                {{ status_badge("running") }}
-                            {% elif package.info.status == "failed" %}
-                                {{ status_badge("failed") }}
-                            {% elif package.info.status == "unknown" %}
-                                {{ status_badge("unknown") }}
-                            {% endif %}
+                            {{ status_badge(package.info.status) }}
                         </h3>
 
                         <textarea class="log-field form-control" readonly placeholder="{{ package.log }}" rows="10"></textarea>

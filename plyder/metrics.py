@@ -8,6 +8,7 @@ def assemble_metrics():
     pkg_list = list_packages()
     pkg_done_count = sum(pkg["info"]["status"] == "done" for pkg in pkg_list)
     pkg_running_count = sum(pkg["info"]["status"] == "running" for pkg in pkg_list)
+    pkg_queued_count = sum(pkg["info"]["status"] == "queued" for pkg in pkg_list)
     pkg_failed_count = sum(pkg["info"]["status"] == "failed" for pkg in pkg_list)
     pkg_unknown_count = sum(pkg["info"]["status"] == "unknown" for pkg in pkg_list)
 
@@ -25,6 +26,7 @@ def assemble_metrics():
         # TYPE plyder_packages_total counter
         plyder_packages_total{{status="done"}} {pkg_done_count}
         plyder_packages_total{{status="running"}} {pkg_running_count}
+        plyder_packages_total{{status="queued"}} {pkg_queued_count}
         plyder_packages_total{{status="failed"}} {pkg_failed_count}
         plyder_packages_total{{status="unknown"}} {pkg_unknown_count}
         # HELP plyder_disk_usage_bytes Disk usage.

@@ -3,6 +3,7 @@ import json
 import shutil
 import pathlib
 import datetime
+import threading
 from urllib.parse import urlparse
 from contextlib import redirect_stdout
 
@@ -20,6 +21,8 @@ STATUS_FILENAME = ".plyder.status"
 LOG_FILENAME = ".download.log"
 
 PROVIDER_DICT = get_provider_dict(config)
+
+DOWNLOADER_SEMAPHORE = threading.Semaphore(config["max_parallel_downloads"])
 
 
 @logger.catch
@@ -72,24 +75,28 @@ def download_package(job: "JobSubmission") -> None:
     output_dir = config["download_directory"] / job.package_name
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    update_package_status("running", output_dir, time_key="start_time")
+    update_package_status("queued", output_dir, time_key="start_time")
 
-    # download
-    logger.info(f'Processing "{job.package_name}"')
+    # start download
+    with DOWNLOADER_SEMAPHORE:
+        update_package_status("running", output_dir, time_key="start_time")
 
-    with (output_dir / LOG_FILENAME).open("w") as fd:
-        with redirect_stdout(fd):
-            any_url_failed = False
-            for url in job.url_field:
-                success = download_url(url, output_dir)
-                any_url_failed |= not success
+        # download
+        logger.info(f'Processing "{job.package_name}"')
 
-    logger.info(f'Finished "{job.package_name}"')
+        with (output_dir / LOG_FILENAME).open("w") as fd:
+            with redirect_stdout(fd):
+                any_url_failed = False
+                for url in job.url_field:
+                    success = download_url(url, output_dir)
+                    any_url_failed |= not success
 
-    # update final status
-    update_package_status(
-        "failed" if any_url_failed else "done", output_dir, time_key="end_time"
-    )
+        logger.info(f'Finished "{job.package_name}"')
+
+        # update final status
+        update_package_status(
+            "failed" if any_url_failed else "done", output_dir, time_key="end_time"
+        )
 
 
 def clean_packages() -> None:
