@@ -113,6 +113,9 @@
                         <textarea class="log-field form-control" readonly placeholder="{{ package.log }}" rows="10"></textarea>
                     </div>
                 {% endfor %}
+                {% if not package_list%}
+                    <span class="text-muted">No packages...</span>
+                {% endif %}
             </div>
         </div>
     </div>
