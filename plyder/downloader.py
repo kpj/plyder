@@ -76,6 +76,7 @@ def download_package(job: "JobSubmission") -> None:
     output_dir.mkdir(parents=True, exist_ok=True)
 
     update_package_status("queued", output_dir, time_key="start_time")
+    logger.info(f'Added "{job.package_name}" to queue')
 
     # start download
     with DOWNLOADER_SEMAPHORE:
