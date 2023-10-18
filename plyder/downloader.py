@@ -43,7 +43,7 @@ class JobSubmission(BaseModel):
         return [url.strip() for url in value.splitlines() if url.strip()]
 
     @field_serializer("url_field")
-    def serialize_dt(self, value: list[str]) -> str:
+    def serialize_url_field(self, value: list[str]) -> str:
         return "\n".join(value)
 
 
