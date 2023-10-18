@@ -48,9 +48,7 @@ def download_url(url: str, output_dir: str) -> bool:
     return True
 
 
-def update_package_status(
-    status: str, output_dir: pathlib.Path, time_key: str | None = None
-) -> None:
+def update_package_status(status: str, output_dir: pathlib.Path, **kwargs) -> None:
     status_file = output_dir / STATUS_FILENAME
 
     # current status data
@@ -60,10 +58,11 @@ def update_package_status(
             status_data = json.load(fd)
 
     # set fields
-    status_data["status"] = status
-
-    if time_key is not None:
-        status_data[time_key] = get_current_time()
+    status_data = {
+        **status_data,
+        "status": status,
+        **kwargs,
+    }
 
     # store result
     with status_file.open("w") as fd:
@@ -75,12 +74,12 @@ def download_package(job: "JobSubmission") -> None:
     output_dir = config["download_directory"] / job.package_name
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    update_package_status("queued", output_dir, time_key="start_time")
+    update_package_status("queued", output_dir, start_time=get_current_time())
     logger.info(f'Added "{job.package_name}" to queue')
 
     # start download
     with DOWNLOADER_SEMAPHORE:
-        update_package_status("running", output_dir, time_key="start_time")
+        update_package_status("running", output_dir, start_time=get_current_time())
 
         # download
         logger.info(f'Processing "{job.package_name}"')
@@ -96,7 +95,9 @@ def download_package(job: "JobSubmission") -> None:
 
         # update final status
         update_package_status(
-            "failed" if any_url_failed else "done", output_dir, time_key="end_time"
+            "failed" if any_url_failed else "done",
+            output_dir,
+            end_time=get_current_time(),
         )
 
 
