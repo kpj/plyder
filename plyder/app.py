@@ -1,3 +1,4 @@
+from contextlib import asynccontextmanager
 import importlib.resources as pkg_resources
 
 from fastapi import FastAPI
@@ -12,16 +13,22 @@ from .config import config
 from .downloader import clean_packages
 
 
-app = FastAPI()
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # startup code
+    config["download_directory"].mkdir(parents=True, exist_ok=True)
+    clean_packages()
+    logger.info(f'Server {config["ip_host"]}:{config["port"]} started')
+
+    yield
+
+    # shutdown code
+    logger.info("Shutting down...")
+
+
+app = FastAPI(lifespan=lifespan)
 
 with pkg_resources.path(static, "styles.css") as static_file:
     app.mount("/static", StaticFiles(directory=static_file.parent), name="static")
 
 app.include_router(server.router)
-
-
-@app.on_event("startup")
-def startup_event():
-    config["download_directory"].mkdir(parents=True, exist_ok=True)
-    clean_packages()
-    logger.info(f'Server {config["ip_host"]}:{config["port"]} started')
