@@ -74,7 +74,9 @@ def download_package(job: "JobSubmission") -> None:
     output_dir = config["download_directory"] / job.package_name
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    update_package_status("queued", output_dir, start_time=get_current_time())
+    update_package_status(
+        "queued", output_dir, start_time=get_current_time(), job=job.model_dump()
+    )
     logger.info(f'Added "{job.package_name}" to queue')
 
     # start download
