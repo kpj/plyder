@@ -40,7 +40,7 @@ def get_provider_dict(config):
     provider_dict = {}
 
     for entry in handler_scripts:
-        if entry.name.startswith("__"):
+        if entry.name.startswith("__") or "experimental" in str(entry):
             continue
 
         host_list = get_hosts_from_provider_script(entry)
