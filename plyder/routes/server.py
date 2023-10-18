@@ -4,11 +4,9 @@ from fastapi import APIRouter, BackgroundTasks, Request
 from fastapi.responses import HTMLResponse, Response
 from fastapi.templating import Jinja2Templates
 
-from pydantic import BaseModel, validator
-
 from ..__version__ import __version__
 from .. import templates
-from ..downloader import download_package, list_packages, get_server_info
+from ..downloader import download_package, list_packages, get_server_info, JobSubmission
 from ..metrics import assemble_metrics
 
 
@@ -16,21 +14,6 @@ router = APIRouter(tags=["server"])
 
 with pkg_resources.path(templates, "index.html") as template_file:
     templates = Jinja2Templates(directory=template_file.parent)
-
-
-class JobSubmission(BaseModel):
-    package_name: str
-    url_field: str
-
-    @validator("package_name", "url_field")
-    def is_nonempty(cls, value):
-        if not value:
-            raise ValueError("must be non-empty")
-        return value
-
-    @validator("url_field")
-    def create_url_list(cls, value):
-        return [url.strip() for url in value.splitlines() if url.strip()]
 
 
 @router.get("/", response_class=HTMLResponse)

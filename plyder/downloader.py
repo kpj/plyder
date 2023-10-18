@@ -1,6 +1,7 @@
 import sys
 import json
 import shutil
+import asyncio
 import pathlib
 import datetime
 import threading
@@ -11,6 +12,8 @@ import sh
 import humanize
 
 from loguru import logger
+
+from pydantic import BaseModel, validator, field_serializer
 
 from .config import config
 from .utils import get_process_memory, get_process_cpu, get_current_time
@@ -23,6 +26,25 @@ LOG_FILENAME = ".download.log"
 PROVIDER_DICT = get_provider_dict(config)
 
 DOWNLOADER_SEMAPHORE = threading.Semaphore(config["max_parallel_downloads"])
+
+
+class JobSubmission(BaseModel):
+    package_name: str
+    url_field: str
+
+    @validator("package_name", "url_field")
+    def is_nonempty(cls, value: str) -> str:
+        if not value:
+            raise ValueError("must be non-empty")
+        return value
+
+    @validator("url_field")
+    def create_url_list(cls, value: str) -> list[str]:
+        return [url.strip() for url in value.splitlines() if url.strip()]
+
+    @field_serializer("url_field")
+    def serialize_dt(self, value: list[str]) -> str:
+        return "\n".join(value)
 
 
 @logger.catch
@@ -103,6 +125,10 @@ def download_package(job: "JobSubmission") -> None:
         )
 
 
+async def download_package_async(job: "JobSubmission") -> None:
+    return download_package(job)
+
+
 def clean_packages() -> None:
     if not config["download_directory"].exists():
         logger.warning(
@@ -121,7 +147,15 @@ def clean_packages() -> None:
         with status_file.open() as fd:
             info = json.load(fd)
 
-        if info["status"] not in ("done", "failed"):
+        if info["status"] in {"done", "failed"}:
+            # download finished (succes or failure)
+            pass
+        elif info["status"] in {"running", "queued"}:
+            # download was interrupted, resuming
+            job = JobSubmission(**info["job"])
+            logger.info(f'Resuming "{job.package_name}"')
+            asyncio.create_task(download_package_async(job))
+        else:
             logger.warning(
                 f'Package "{entry.name}" in inconsistent state, setting to failed'
             )
