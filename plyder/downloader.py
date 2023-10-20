@@ -5,6 +5,7 @@ import asyncio
 import pathlib
 import datetime
 import threading
+from concurrent import futures
 from urllib.parse import urlparse
 from contextlib import redirect_stdout
 
@@ -125,10 +126,6 @@ def download_package(job: "JobSubmission") -> None:
         )
 
 
-async def download_package_async(job: "JobSubmission") -> None:
-    return download_package(job)
-
-
 def clean_packages() -> None:
     if not config["download_directory"].exists():
         logger.warning(
@@ -154,7 +151,11 @@ def clean_packages() -> None:
             # download was interrupted, resuming
             job = JobSubmission(**info["job"])
             logger.info(f'Resuming "{job.package_name}"')
-            asyncio.create_task(download_package_async(job))
+
+            loop = asyncio.get_running_loop()
+            loop.run_in_executor(
+                futures.ThreadPoolExecutor(), lambda: download_package(job)
+            )
         else:
             logger.warning(
                 f'Package "{entry.name}" in inconsistent state, setting to failed'
