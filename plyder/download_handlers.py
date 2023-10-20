@@ -32,7 +32,11 @@ def get_hosts_from_provider_script(path, host_line_prefix="# PLYDER_HOST:"):
 
 def get_provider_dict(config):
     handler_scripts = [
-        *pkg_resources.files(download_providers).iterdir(),  # built-in handlers,
+        *[
+            res
+            for res in pkg_resources.files(download_providers).iterdir()
+            if "experimental" not in str(res)
+        ],  # built-in handlers,
         *(Path(p).resolve() for p in config["download_handlers"]),  # custom handlers
     ]
 
@@ -40,7 +44,7 @@ def get_provider_dict(config):
     provider_dict = {}
 
     for entry in handler_scripts:
-        if entry.name.startswith("__") or "experimental" in str(entry):
+        if entry.name.startswith("__"):
             continue
 
         host_list = get_hosts_from_provider_script(entry)
