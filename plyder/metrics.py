@@ -1,11 +1,11 @@
 import textwrap
 
-from .downloader import list_packages, get_server_info
+from .downloader import Downloader
 
 
-def assemble_metrics():
+def assemble_metrics(downloader: Downloader) -> str:
     # count packages
-    pkg_list = list_packages()
+    pkg_list = downloader.list_packages()
     pkg_done_count = sum(pkg["info"]["status"] == "done" for pkg in pkg_list)
     pkg_running_count = sum(pkg["info"]["status"] == "running" for pkg in pkg_list)
     pkg_queued_count = sum(pkg["info"]["status"] == "queued" for pkg in pkg_list)
@@ -13,7 +13,7 @@ def assemble_metrics():
     pkg_unknown_count = sum(pkg["info"]["status"] == "unknown" for pkg in pkg_list)
 
     # retrieve server info
-    info = get_server_info()
+    info = downloader.get_server_info()
     du_total = info["disk_usage_raw"]["total"]
     du_used = info["disk_usage_raw"]["used"]
     process_memory = info["process"]["memory"]

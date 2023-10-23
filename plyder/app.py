@@ -10,14 +10,15 @@ from . import static
 from .routes import server
 
 from .config import config
-from .downloader import clean_packages
+from .downloader import Downloader
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # startup code
-    config["download_directory"].mkdir(parents=True, exist_ok=True)
-    clean_packages()
+    app.state.downloader = Downloader(config)
+
+    app.state.downloader.clean_packages()
     logger.info(f'Server {config["ip_host"]}:{config["port"]} started')
 
     yield
