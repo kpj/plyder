@@ -17,7 +17,7 @@ def dummy_download(url, target_dir):
 def client(mocker, tmp_path_factory):
     mocker.patch.dict(
         "plyder.config.config",
-        {"download_directory": tmp_path_factory.mktemp("plyder_downloads")},
+        {**config, "download_directory": tmp_path_factory.mktemp("plyder_downloads")},
         clear=True,
     )
 
@@ -28,7 +28,8 @@ def client(mocker, tmp_path_factory):
         clear=True,
     )
 
-    return TestClient(app)
+    with TestClient(app) as client:
+        return client
 
 
 def test_app(client):
