@@ -18,7 +18,9 @@ def download_wget(url: str, output_dir: str) -> None:
     )
 
 
-def get_hosts_from_provider_script(path, host_line_prefix="# PLYDER_HOST:"):
+def get_hosts_from_provider_script(
+    path: Path, host_line_prefix: str = "# PLYDER_HOST:"
+) -> list[str]:
     host_list = []
     with path.open() as fd:
         for line in fd.readlines():
@@ -30,14 +32,14 @@ def get_hosts_from_provider_script(path, host_line_prefix="# PLYDER_HOST:"):
     return host_list
 
 
-def get_provider_dict(config):
+def get_provider_dict(custom_download_handler_list: list[str]):
     handler_scripts = [
         *[
             res
             for res in pkg_resources.files(download_providers).iterdir()
             if "experimental" not in str(res)
         ],  # built-in handlers,
-        *(Path(p).resolve() for p in config["download_handlers"]),  # custom handlers
+        *(Path(p).resolve() for p in custom_download_handler_list),
     ]
 
     # generate provider information

@@ -44,7 +44,7 @@ class Downloader:
     def __init__(self, config: dict[str, Any]) -> None:
         self.config = config
 
-        self.provider_dict = get_provider_dict(self.config)
+        self.provider_dict = get_provider_dict(self.config["download_handlers"])
         self.semaphore = threading.Semaphore(self.config["max_parallel_downloads"])
 
         self.status_filename = ".plyder.status"
