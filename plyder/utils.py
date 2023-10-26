@@ -1,10 +1,9 @@
-import os
 import datetime
 
 import psutil
 
 
-_proc = psutil.Process(os.getpid())
+_proc = psutil.Process()
 _proc.cpu_percent()  # first call will always return 0
 
 
@@ -19,7 +18,7 @@ def get_process_memory() -> float:
 def get_process_cpu() -> float:
     cpu = _proc.cpu_percent()
     for child in _proc.children(recursive=True):
-        cpu += child.cpu_percent(interval=0.01)  # TODO: performance impact?
+        cpu += child.cpu_percent(interval=0.1)
 
     return cpu
 
