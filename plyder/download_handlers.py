@@ -1,4 +1,5 @@
 import sys
+from typing import Any
 from pathlib import Path
 import importlib.resources as pkg_resources
 
@@ -32,7 +33,9 @@ def get_hosts_from_provider_script(
     return host_list
 
 
-def get_provider_dict(custom_download_handler_list: list[str]):
+def get_provider_dict(
+    custom_download_handler_list: list[str]
+) -> dict[str, dict[str, Any]]:
     handler_scripts = [
         *[
             res

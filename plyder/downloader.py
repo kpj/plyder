@@ -150,7 +150,7 @@ class Downloader:
                 info = json.load(fd)
 
             if info["status"] in {"done", "failed"}:
-                # download finished (succes or failure)
+                # download finished (success or failure)
                 pass
             elif info["status"] in {"running", "queued"}:
                 # download was interrupted, resuming
@@ -166,8 +166,7 @@ class Downloader:
                     f'Package "{entry.name}" in inconsistent state, setting to failed'
                 )
 
-                with status_file.open("w") as fd:
-                    json.dump({"status": "failed"}, fd)
+                self.update_package_status("failed", entry)
 
     def list_packages(self):
         if not self.config["download_directory"].exists():
