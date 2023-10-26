@@ -34,7 +34,7 @@ def get_hosts_from_provider_script(
 
 
 def get_provider_dict(
-    custom_download_handler_list: list[str]
+    custom_download_handler_list: list[str],
 ) -> dict[str, dict[str, Any]]:
     handler_scripts = [
         *[
