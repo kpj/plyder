@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "plyder"
-version = "0.3.1"
+version = "1.0.0"
 description = "Download manager with web-interface."
 license = "MIT"
 authors = ["kpj <kim.philipp.jablonski@gmail.com>"]
@@ -25,12 +25,12 @@ psutil = "^5.8.0"
 pydantic = "^2"
 
 [tool.poetry.dev-dependencies]
-bump2version = "^1.0.1"
 black = "^23.1"
 pytest = "^7.0.0"
 pytest-mock = "^3.6.1"
 beautifulsoup4 = "^4.10.0"
 fastapi = {extras = ["all"], version = "^0.104.0"}
+bump-my-version = "^0.12.0"
 
 [tool.poetry.scripts]
 plyder = "plyder:main"
@@ -39,6 +39,16 @@ plyder = "plyder:main"
 testpaths = [
     "tests",
 ]
+
+[tool.bumpversion]
+current_version = "0.3.1"
+tag = true
+commit = true
+
+[[tool.bumpversion.files]]
+filename = "pyproject.toml"
+search = 'version = "{current_version}"'
+replace = 'version = "{new_version}"'
 
 [build-system]
 requires = ["poetry"]
