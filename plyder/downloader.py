@@ -13,6 +13,7 @@ from urllib.parse import urlparse
 
 import humanize
 import sh
+from cachetools import LRUCache, TTLCache, cachedmethod
 from loguru import logger
 from pydantic import BaseModel, field_serializer, field_validator
 
@@ -54,6 +55,9 @@ class Downloader:
         self.log_filename = ".download.log"
 
         self.config["download_directory"].mkdir(parents=True, exist_ok=True)
+        self._executor = futures.ThreadPoolExecutor()
+        self._package_cache = LRUCache(maxsize=1000)
+        self._server_info_cache = TTLCache(maxsize=1, ttl=10)
 
     @logger.catch
     def download_url(self, url: str, output_dir: str) -> bool:
@@ -163,15 +167,42 @@ class Downloader:
                 logger.info(f'Resuming "{job.package_name}"')
 
                 loop = asyncio.get_running_loop()
-                loop.run_in_executor(
-                    futures.ThreadPoolExecutor(), lambda: self.download_package(job)
-                )
+                loop.run_in_executor(self._executor, lambda: self.download_package(job))
             else:
                 logger.warning(
                     f'Package "{entry.name}" in inconsistent state, setting to failed'
                 )
 
                 self.update_package_status("failed", entry)
+
+    @cachedmethod(
+        lambda self: self._package_cache,
+        key=lambda self, name, ml, ms: (name, ml, ms),
+    )
+    def _get_package_info(
+        self, name: str, mtime_log: float, mtime_status: float
+    ) -> dict:
+        entry = self.config["download_directory"] / name
+        log_file = entry / self.log_filename
+        status_file = entry / self.status_filename
+
+        # read log (last 10000 bytes)
+        log_text = ""
+        if log_file.exists():
+            file_size = log_file.stat().st_size
+            offset = min(10000, file_size)
+            with log_file.open("rb") as fd:
+                fd.seek(-offset, os.SEEK_END)
+                log_text = fd.read().decode("utf-8", errors="replace")
+
+        # assemble information
+        try:
+            with status_file.open() as fd:
+                info = json.load(fd)
+        except (FileNotFoundError, json.decoder.JSONDecodeError):
+            info = {"status": "unknown"}
+
+        return {"name": name, "info": info, "log": log_text}
 
     def list_packages(self) -> list[dict[str, Any]]:
         if not self.config["download_directory"].exists():
@@ -185,27 +216,13 @@ class Downloader:
             if not entry.is_dir():
                 continue
 
-            # read log (last 10000 bytes)
             log_file = entry / self.log_filename
-            log_text = ""
-            if log_file.exists():
-                file_size = log_file.stat().st_size
-                offset = min(10000, file_size)
-                with log_file.open("rb") as fd:
-                    fd.seek(-offset, os.SEEK_END)
-                    log_text = fd.read().decode("utf-8", errors="replace")
-
-            # assemble information
             status_file = entry / self.status_filename
-            try:
-                with status_file.open() as fd:
-                    info = json.load(fd)
-            except (FileNotFoundError, json.decoder.JSONDecodeError):
-                # due to race conditions, the file may not contain valid JSON
-                # even if it exists
-                info = {"status": "unknown"}
 
-            res.append({"name": entry.name, "info": info, "log": log_text})
+            mtime_log = log_file.stat().st_mtime if log_file.exists() else 0
+            mtime_status = status_file.stat().st_mtime if status_file.exists() else 0
+
+            res.append(self._get_package_info(entry.name, mtime_log, mtime_status))
 
         # sort packages by download started date
         return sorted(
@@ -216,6 +233,7 @@ class Downloader:
             reverse=True,
         )
 
+    @cachedmethod(lambda self: self._server_info_cache)
     def get_server_info(self) -> dict[str, Any]:
         if self.config["download_directory"].exists():
             total, used, free = shutil.disk_usage(self.config["download_directory"])
