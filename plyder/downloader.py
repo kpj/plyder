@@ -1,39 +1,42 @@
-import sys
-import json
-import shutil
 import asyncio
-import pathlib
 import datetime
+import json
+import os
+import pathlib
+import shutil
+import sys
 import threading
-from typing import Any
 from concurrent import futures
-from urllib.parse import urlparse
 from contextlib import redirect_stdout
+from typing import Any
+from urllib.parse import urlparse
 
-import sh
 import humanize
-
+import sh
 from loguru import logger
+from pydantic import BaseModel, field_serializer, field_validator
 
-from pydantic import BaseModel, validator, field_serializer
-
-from .utils import get_process_memory, get_process_cpu, get_current_time
 from .download_handlers import DEFAULT_PROVIDER, get_provider_dict
+from .utils import get_current_time, get_process_cpu, get_process_memory
 
 
 class JobSubmission(BaseModel):
     package_name: str
-    url_field: str
+    url_field: list[str]
 
-    @validator("package_name", "url_field")
-    def is_nonempty(cls, value: str) -> str:
-        if not value:
+    @field_validator("package_name")
+    @classmethod
+    def is_nonempty(cls, v: str) -> str:
+        if not v:
             raise ValueError("must be non-empty")
-        return value
+        return v
 
-    @validator("url_field")
-    def create_url_list(cls, value: str) -> list[str]:
-        return [url.strip() for url in value.splitlines() if url.strip()]
+    @field_validator("url_field", mode="before")
+    @classmethod
+    def create_url_list(cls, v: Any) -> list[str]:
+        if isinstance(v, str):
+            return [url.strip() for url in v.splitlines() if url.strip()]
+        return v
 
     @field_serializer("url_field")
     def serialize_url_field(self, value: list[str]) -> str:
@@ -82,7 +85,7 @@ class Downloader:
         # current status data
         status_data = {}
         if status_file.exists():
-            with (output_dir / self.status_filename).open() as fd:
+            with status_file.open() as fd:
                 status_data = json.load(fd)
 
         # set fields
@@ -92,9 +95,11 @@ class Downloader:
             **kwargs,
         }
 
-        # store result
-        with status_file.open("w") as fd:
+        # store result atomically
+        temp_file = status_file.with_suffix(".tmp")
+        with temp_file.open("w") as fd:
             json.dump(status_data, fd)
+        temp_file.replace(status_file)
 
     def download_package(self, job: "JobSubmission") -> None:
         # prepare environment
@@ -134,7 +139,7 @@ class Downloader:
     def clean_packages(self) -> None:
         if not self.config["download_directory"].exists():
             logger.warning(
-                f'Download directory ({self.config["download_directory"]}) does not exist.'
+                f"Download directory ({self.config['download_directory']}) does not exist."
             )
             return
 
@@ -168,10 +173,10 @@ class Downloader:
 
                 self.update_package_status("failed", entry)
 
-    def list_packages(self):
+    def list_packages(self) -> list[dict[str, Any]]:
         if not self.config["download_directory"].exists():
             logger.warning(
-                f'Download directory ({self.config["download_directory"]}) does not exist.'
+                f"Download directory ({self.config['download_directory']}) does not exist."
             )
             return []
 
@@ -180,13 +185,15 @@ class Downloader:
             if not entry.is_dir():
                 continue
 
-            # read log
+            # read log (last 10000 bytes)
             log_file = entry / self.log_filename
+            log_text = ""
             if log_file.exists():
-                with log_file.open() as fd:
-                    log_text = fd.read()[-10000:]  # truncate
-            else:
-                log_text = ""
+                file_size = log_file.stat().st_size
+                offset = min(10000, file_size)
+                with log_file.open("rb") as fd:
+                    fd.seek(-offset, os.SEEK_END)
+                    log_text = fd.read().decode("utf-8", errors="replace")
 
             # assemble information
             status_file = entry / self.status_filename
@@ -209,7 +216,7 @@ class Downloader:
             reverse=True,
         )
 
-    def get_server_info(self):
+    def get_server_info(self) -> dict[str, Any]:
         if self.config["download_directory"].exists():
             total, used, free = shutil.disk_usage(self.config["download_directory"])
         else:

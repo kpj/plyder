@@ -1,7 +1,6 @@
-from fastapi.testclient import TestClient
-
 import pytest
 from bs4 import BeautifulSoup
+from fastapi.testclient import TestClient
 
 from plyder.app import app
 from plyder.config import config
@@ -73,8 +72,9 @@ def test_download(client):
         in (dw_dir / "current_package" / ".plyder.status").read_text()
     )
     assert (
-        dw_dir / "current_package" / ".download.log"
-    ).read_text() == "Created file first_url\nCreated file second_url\nCreated file something with spaces\nCreated file last_url\n"
+        (dw_dir / "current_package" / ".download.log").read_text()
+        == "Created file first_url\nCreated file second_url\nCreated file something with spaces\nCreated file last_url\n"
+    )
 
     # test display after download
     resp = client.get("/")

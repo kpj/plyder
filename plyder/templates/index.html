@@ -30,8 +30,6 @@
 
     <link href="{{ url_for('static', path='/bootstrap.min.css') }}" rel="stylesheet">
     <link href="{{ url_for('static', path='/styles.css') }}" rel="stylesheet">
-
-    <script src="{{ url_for('static', path='/axios.min.js') }}"></script>
 </head>
 <body>
     <div class="container">
@@ -110,7 +108,7 @@
                             {{ status_badge(package.info.status) }}
                         </h3>
 
-                        <textarea class="log-field form-control" readonly placeholder="{{ package.log }}" rows="10"></textarea>
+                        <textarea class="log-field form-control" readonly placeholder="No logs available..." rows="10">{{ package.log }}</textarea>
                     </div>
                 {% endfor %}
                 {% if not package_list%}
@@ -122,18 +120,22 @@
 
     <script>
         function submitJob() {
-            return axios.post("/submit_job", {
-                package_name: document.getElementById("package_name").value,
-                url_field: document.getElementById("url_field").value
-            }, {
+            const name = document.getElementById("package_name").value;
+            const urls = document.getElementById("url_field").value;
+
+            return fetch("/submit_job", {
+                method: "POST",
                 headers: {
                     "Content-type": "application/json",
-                }
+                },
+                body: JSON.stringify({
+                    package_name: name,
+                    url_field: urls
+                })
             }).then((response) => {
-                console.log(response)
-                window.location.href = window.location.href
+                window.location.reload();
             }).catch((error) => {
-                console.log(error)
+                console.error(error);
             })
         }
 

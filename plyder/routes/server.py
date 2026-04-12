@@ -1,27 +1,25 @@
-import importlib.resources as pkg_resources
+from importlib import resources
 
 from fastapi import APIRouter, BackgroundTasks, Request
 from fastapi.responses import HTMLResponse, Response
 from fastapi.templating import Jinja2Templates
 
-from ..__version__ import __version__
 from .. import templates
+from ..__version__ import __version__
 from ..downloader import JobSubmission
 from ..metrics import assemble_metrics
 
-
 router = APIRouter(tags=["server"])
 
-with pkg_resources.path(templates, "index.html") as template_file:
-    templates = Jinja2Templates(directory=template_file.parent)
+jinja_templates = Jinja2Templates(directory=str(resources.files(templates)))
 
 
 @router.get("/", response_class=HTMLResponse)
 async def root(request: Request):
-    return templates.TemplateResponse(
-        "index.html",
-        {
-            "request": request,
+    return jinja_templates.TemplateResponse(
+        request=request,
+        name="index.html",
+        context={
             "version": __version__,
             "package_list": request.app.state.downloader.list_packages(),
             "server_info": request.app.state.downloader.get_server_info(),

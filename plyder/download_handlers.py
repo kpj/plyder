@@ -1,7 +1,7 @@
 import sys
-from typing import Any
+from importlib import resources
 from pathlib import Path
-import importlib.resources as pkg_resources
+from typing import Any
 
 import sh
 from loguru import logger
@@ -39,9 +39,9 @@ def get_provider_dict(
     handler_scripts = [
         *[
             res
-            for res in pkg_resources.files(download_providers).iterdir()
-            if "experimental" not in str(res)
-        ],  # built-in handlers,
+            for res in resources.files(download_providers).iterdir()
+            if "experimental" not in str(res) and res.name.endswith((".sh", ".py"))
+        ],  # built-in handlers
         *(Path(p).resolve() for p in custom_download_handler_list),
     ]
 
@@ -52,7 +52,13 @@ def get_provider_dict(
         if entry.name.startswith("__"):
             continue
 
-        host_list = get_hosts_from_provider_script(entry)
+        if isinstance(entry, Path):
+            path = entry
+        else:
+            with resources.as_file(entry) as p:
+                path = p
+
+        host_list = get_hosts_from_provider_script(path)
         if len(host_list) == 0:
             logger.warning(f"[{entry}] No hosts specified, skipping")
 
@@ -60,7 +66,7 @@ def get_provider_dict(
             if host in provider_dict:
                 logger.warning(f"[{entry}] Overriding downloader for {host}")
 
-            provider_dict[host] = {"name": host, "function": sh.Command(entry)}
+            provider_dict[host] = {"name": host, "function": sh.Command(str(path))}
 
     return provider_dict
 

@@ -1,11 +1,9 @@
 from pathlib import Path
 
-import yaml
 import jsonschema
+import yaml
 from appdirs import user_config_dir
-
 from loguru import logger
-
 
 DEFAULT_CONFIG = {
     "download_directory": "~/Downloads/",

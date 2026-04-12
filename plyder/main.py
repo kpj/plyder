@@ -1,5 +1,4 @@
 import uvicorn
-
 from loguru import logger
 
 from .__version__ import __version__
