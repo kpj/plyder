@@ -30,7 +30,6 @@ plyder = "plyder.main:main"
 
 [dependency-groups]
 dev = [
-    "black>=23.1",
     "pytest>=7.0.0",
     "pytest-mock>=3.6.1",
     "beautifulsoup4>=4.10.0",
